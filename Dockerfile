@@ -14,11 +14,7 @@ RUN pecl install -o -f xdebug \
 # PHP configuration
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
-#install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
 COPY ["custom.ini","/usr/local/etc/php/conf.d/"]
 
 RUN chmod -R 777 /var/www/html
 RUN chown -R www-data:www-data /var/www/html
-COPY [".","/var/www/html"]

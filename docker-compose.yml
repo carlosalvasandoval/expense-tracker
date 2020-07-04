@@ -16,7 +16,7 @@ services:
 
   web:
     build: .
-    container_name: dessert-bot
+    container_name: web
     image: web:1.0.0
     volumes:
       - ${HOST_APP_PATH}:/var/www/html
@@ -24,3 +24,12 @@ services:
       - ${APACHE_HOST_PORT}:80
     depends_on:
       - mysql
+    environment:
+      WEB_DOCUMENT_ROOT: "/var/www/html"
+
+  composer:
+    image: composer:2.0
+    container_name: composer
+    command: ["composer", "install"]
+    volumes:
+      - ${HOST_APP_PATH}:/app
