@@ -26,10 +26,3 @@ services:
       - mysql
     environment:
       WEB_DOCUMENT_ROOT: "/var/www/html"
-
-  composer:
-    image: composer:2.0
-    container_name: composer
-    command: ["composer", "install"]
-    volumes:
-      - ${HOST_APP_PATH}:/app
