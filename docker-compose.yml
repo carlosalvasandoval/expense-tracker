@@ -16,6 +16,8 @@ services:
 
   web:
     build: .
+    env_file:
+      - .env
     container_name: web
     image: web:1.0.0
     volumes:

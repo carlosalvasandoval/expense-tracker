@@ -13,10 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
  */
 
-/* Route::middleware('auth:api')->get('/user', function (Request $request) {
-return $request->user();
-}); */
-
 Route::group([
 	'middleware' => 'api',
 	'prefix' => 'v1',
@@ -25,6 +21,13 @@ Route::group([
 	Route::post('auth/login', 'AuthController@login');
 	Route::post('auth/logout', 'AuthController@logout');
 	Route::post('auth/refresh', 'AuthController@refresh');
-	Route::post('auth/me', 'AuthController@me');
+    Route::post('auth/me', 'AuthController@me');
+});
 
+Route::group([
+	'middleware' => 'jwt.verify',
+	'prefix' => 'v1',
+], function ($router)
+{
+    Route::apiResource('expenses', 'ExpenseController')->except('show');;
 });

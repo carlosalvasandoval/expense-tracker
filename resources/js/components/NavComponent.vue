@@ -2,8 +2,6 @@
   <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
     <div class="container">
       <router-link to="/" class="navbar-brand">Home</router-link>
-      <router-link to="/login">Login</router-link>
-      <router-link to="/logout">Home</router-link>
       <button
         class="navbar-toggler"
         type="button"

@@ -5,7 +5,7 @@
  */
 
 require('./bootstrap');
-
+import { store } from './store/store'
 window.Vue = require('vue');
 
 /**
@@ -29,5 +29,6 @@ Vue.component('NavComponent', require('./components/NavComponent').default);
 import router from './router';
 const app = new Vue({
     el: '#app',
-    router
+    router,
+    store
 });

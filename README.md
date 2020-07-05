@@ -1,5 +1,5 @@
-# Dessert Bot
-This project has the intention of creating a simple slack bot for ordering desserts.
+# Expense tracker
+This project has the intention of creating a simple expenses tracker.
 
 ## Project requirements
 - [docker](https://www.docker.com/get-started) 
@@ -7,7 +7,7 @@ This project has the intention of creating a simple slack bot for ordering desse
 
 ## Instalation instructions
 - copy .env.example to .env
-- run `docker-compose up -d` for downaloading all images and create all containers
+- run `docker-compose up -d` for downloading all images and create all containers
 - make sure all container are alive `docker ps`
 - run this command to config the project `docker-compose exec web sh /var/www/html/scripts/init.sh`
 
