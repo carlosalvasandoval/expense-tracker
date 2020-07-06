@@ -1,5 +1,5 @@
 <template>
-  <form>
+  <form class="container">
     <div class="form-group">
       <label for="email">Email address</label>
       <input
@@ -20,7 +20,7 @@
       />
       <div class="invalid-feedback">Password is required</div>
     </div>
-    <div v-if="errorServerMessage">{{errorServerMessage}}</div>
+    <div v-if="errorServerMessage" class="text-danger">{{errorServerMessage}}</div>
     <button type="button" class="btn btn-primary" @click="submit">Submit</button>
   </form>
 </template>
@@ -32,12 +32,12 @@ export default {
       password: "",
       emailBlured: false,
       passwordBlured: false,
-      valid: false,
+      valid: false
     };
   },
   computed: {
-    errorServerMessage () {
-      return this.$store.getters.getErrorServerMessage
+    errorServerMessage() {
+      return this.$store.getters.getErrorMessage;
     }
   },
   methods: {
@@ -53,12 +53,17 @@ export default {
       return re.test(email.toLowerCase());
     },
     submit() {
-     // this.errorServerMessage = "";
+      this.$store.commit("setErrorMessage", "");
       this.validate();
       if (this.valid) {
-          this.$store.dispatch('retrieveToken',{
-              email:this.email,
-              password:this.password
+        this.$store
+          .dispatch("retrieveToken", {
+            email: this.email,
+            password: this.password
+          })
+          .then(response => {
+              console.log(response)
+            this.$router.push({ name: "expenses" });
           });
       }
     }

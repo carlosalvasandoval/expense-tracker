@@ -29,5 +29,8 @@ Route::group([
 	'prefix' => 'v1',
 ], function ($router)
 {
-    Route::apiResource('expenses', 'ExpenseController')->except('show');;
+    Route::apiResource('expenses', 'ExpenseController')->except('show','index');
+    Route::get('expenses/list-years', 'ExpenseController@listYears');
+    Route::get('expenses/list-months/{year}', 'ExpenseController@listMonths');
+    Route::get('expenses/{month?}/{year?}', 'ExpenseController@index');
 });

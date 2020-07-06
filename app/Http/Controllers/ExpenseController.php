@@ -14,9 +14,12 @@ class ExpenseController extends Controller
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	public function index()
+	public function index($month = null, $year = null)
 	{
-		$expenses = Expense::where('user_id', Auth::id())->OrderByYearAndMonth()->get();
+		$month = $month ?? date('m');
+		$year = $year ?? date('Y');
+		$expenses = Expense::where('user_id', Auth::id())
+			->OrderByYearAndMonth($month, $year)->get();
 		return response()->json(['data' => $expenses]);
 	}
 
@@ -39,9 +42,10 @@ class ExpenseController extends Controller
 	 * @param  int  $id
 	 * @return \Illuminate\Http\Response
 	 */
-	public function destroy($id)
+	public function destroy(Expense $expense)
 	{
-		//
+		$expense->delete();
+		return response()->json(['status' => 'Expense deleted!']);
 	}
 
 	/**
@@ -55,8 +59,22 @@ class ExpenseController extends Controller
 		$userId = Auth::id();
 		$validated = $request->validated();
 		$validated['user_id'] = $userId;
-		Expense::create($validated);
-		return response()->json(['status' => 'new expense saved!']);
+		$expense = Expense::create($validated);
+		return response()->json([
+			'data' => $expense,
+			'status' => 'new expense saved!']);
+	}
+
+	public function listYears()
+	{
+		$years = Expense::years()->get();
+		return response()->json(['data' => $years]);
+	}
+
+	public function listMonths($year)
+	{
+		$months = Expense::months($year)->get();
+		return response()->json(['data' => $months]);
 	}
 
 }
