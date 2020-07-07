@@ -10,6 +10,7 @@ This project has the intention of creating a simple expenses tracker.
 - run `docker-compose up -d` for downloading all images and create all containers
 - make sure all container are alive `docker ps`
 - run this command to config the project `docker-compose exec web sh /var/www/html/scripts/init.sh`
+- In file `.env` you can see ADMIN_EMAIL=`admin@admin.com`  and ADMIN_PASSWORD=`123456` use these credential for login.
 
 ## License
  [MIT license](https://opensource.org/licenses/MIT).
