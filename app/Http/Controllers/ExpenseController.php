@@ -14,12 +14,16 @@ class ExpenseController extends Controller
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	public function index($month = null, $year = null)
+	public function index(int $month = null, int $year = null)
 	{
 		$month = $month ?? date('m');
 		$year = $year ?? date('Y');
 		$expenses = Expense::where('user_id', Auth::id())
-			->OrderByYearAndMonth($month, $year)->get();
+			->where('month', $month)
+			->where('year', $year)
+			->orderBy('year','desc')
+			->orderBy('month','desc')
+			->get();
 		return response()->json(['data' => $expenses]);
 	}
 
@@ -32,7 +36,9 @@ class ExpenseController extends Controller
 	 */
 	public function update(StoreExpense $request, Expense $expense)
 	{
-		$expense->update($request->validated());
+		$userId = Auth::id();
+		$expense
+			->update($request->validated());
 		return response()->json(['status' => 'Expense updated!']);
 	}
 

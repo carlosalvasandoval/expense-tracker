@@ -28,6 +28,8 @@ class StoreExpense extends FormRequest
 	{
 		return [
 			'item' => 'required|max:255',
+			'year' => 'digits:4',
+			'month'=> 'min:1|max:12',
 			'cost' => 'required|numeric|max:99999999',
 		];
 	}

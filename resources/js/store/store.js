@@ -3,12 +3,20 @@ import Vuex from 'vuex'
 import axios from 'axios'
 
 Vue.use(Vuex)
-axios.defaults.baseURL = 'http://localhost:8080/api/v1'
-
-const token = localStorage.getItem('access_token')
+axios.defaults.baseURL = 'http://localhost:8080/api/v1';
+const token = localStorage.getItem('access_token');
 if (token) {
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
 }
+axios.interceptors.request.use(function (config) {
+    let token = localStorage.getItem('access_token');
+    if (token) {
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    }
+    return config;
+}, function (error) {
+    return Promise.reject(error);
+});
 
 export const store = new Vuex.Store({
     state: {
@@ -21,40 +29,24 @@ export const store = new Vuex.Store({
     },
     getters: {
         isAuthenticated: state => !!state.token,
-        loggedIn(state) {
-            return state.token !== null
-        },
+        loggedIn: state => state.token !== null,
         expenses: state => state.expenses,
         years: state => state.years,
         months: state => state.months,
-        expensesFiltered(state) {
-            if (state.filter == 'all') {
-                return state.expenses
-            } else if (state.filter == 'active') {
-                return state.expenses.filter(expense => !expense.completed)
-            } else if (state.filter == 'completed') {
-                return state.expenses.filter(expense => expense.completed)
-            }
-            return state.expenses
-        },
-        getErrorMessage(state) {
-            return state.errorMessage;
-        }
+        getErrorMessage: state => state.errorMessage
     },
     mutations: {
         addExpense(state, expense) {
-            state.expenses.data.unshift(expense.data);
+            state.expenses.unshift(expense);
         },
-        updateExpense(state, expense) {
-            const index = state.expenses.data.findIndex(item => item.id == expense.id)
-            state.expenses.data.splice(index, 1, {
-                'item': expense.item,
-                'cost': expense.cost
-            })
+        updateExpense(state, expenseUpdated) {
+            const index = state.expenses.findIndex(expense => expense.id == expenseUpdated.id)
+            let newArray = [...this.state.expenses]
+            newArray[index] = { ...newArray[index] }
         },
         deleteExpense(state, id) {
-            const index = state.expenses.data.findIndex(expense => expense.id == id)
-            state.expenses.data.splice(index, 1);
+            const index = state.expenses.findIndex(expense => expense.id == id)
+            state.expenses.splice(index, 1);
         },
         retrieveYears(state, years) {
             state.years = years
@@ -71,116 +63,69 @@ export const store = new Vuex.Store({
         destroyToken(state) {
             state.token = null
         },
-        clearexpenses(state) {
-            state.expenses = []
-        },
         setErrorMessage(state, error) {
             state.errorMessage = error;
         }
     },
     actions: {
-       
-        destroyToken(context) {
-            return new Promise((resolve, reject) => {
-                context.commit('destroyToken');
-                localStorage.removeItem('access_token');
-                resolve()
-            })
+        async destroyToken({ commit }) {
+            commit('destroyToken');
+            localStorage.removeItem('access_token');
         },
-        retrieveToken(context, credentials) {
-            return new Promise((resolve, reject) => {
-                axios
+        async retrieveToken({ commit }, credentials) {
+            try {
+                let response = await axios
                     .post("/auth/login", {
                         email: credentials.email,
                         password: credentials.password,
-                    })
-                    .then(response => {
-                        let accessToken = response.data.access_token;
-                        localStorage.setItem("access_token", accessToken);
-                        context.commit('retrieveToken', accessToken)
-                        resolve(response)
-                    })
-                    .catch(error => {
-                        context.commit('setErrorMessage', error.response.data.error)
-                        reject(error)
                     });
-            })
 
+                let accessToken = response.data.access_token;
+                localStorage.setItem("access_token", accessToken);
+                commit('retrieveToken', accessToken);
+            } catch (error) {
+                commit('setErrorMessage', error.response.data.error)
+            }
         },
-        retrieveYears(context) {
-            return new Promise((resolve, reject) => {
-                axios.get('/expenses/list-years')
-                    .then(response => {
-                        context.commit('retrieveYears', response.data);
-                        resolve(response);
-                    })
-                    .catch(error => {
-                        reject(error);
-                    })
-            });
+        async retrieveYears({ commit }) {
+            let listYears = await axios.get('/expenses/list-years');
+            commit('retrieveYears', listYears.data.data);
         },
-        retrieveMonths(context, year) {
-            return new Promise((resolve, reject) => {
-                axios.get('/expenses/list-months/' + year)
-                    .then(response => {
-                        context.commit('retrieveMonths', response.data);
-                        resolve(response);
-                    })
-                    .catch(error => {
-                        reject(error);
-                    })
-            });
+        async retrieveMonths({ commit }, year) {
+            let listMonths = await axios.get('/expenses/list-months/' + year);
+            commit('retrieveMonths', listMonths.data.data);
         },
-        retrieveExpenses(context, date) {
-            return new Promise((resolve, reject) => {
-                axios.get(`/expenses/${date.year}/6`)
-                    .then(response => {
-                        context.commit('retrieveExpenses', response.data);
-                        resolve(response);
-                    })
-                    .catch(error => {
-                        reject(error);
-                    })
-            });
+        async retrieveExpenses({ commit }, date) {
+            let expenses = await axios.get(`/expenses/${date.month}/${date.year}`)
+            commit('retrieveExpenses', expenses.data.data);
         },
-        addExpense(context, expense) {
-            return new Promise((resolve, reject) => {
-                axios.post('/expenses', {
+        async addExpense({ commit }, expenseInputs) {
+            let newExpense = await axios.post('/expenses', {
+                item: expenseInputs.item,
+                cost: expenseInputs.cost,
+                year: expenseInputs.year,
+                month: expenseInputs.month
+            })
+            commit('addExpense', newExpense.data.data);
+            return newExpense.data.status;
+        },
+        async updateExpense({ commit }, expense) {
+            try {
+                let response = await axios.patch('/expenses/' + expense.id, {
                     item: expense.item,
                     cost: expense.cost,
                 })
-                    .then(response => {
-                        context.commit('addExpense', response.data)
-                        resolve(response)
-                    })
-                    .catch(error => {
-                        reject(error)
-                    })
-            })
+                commit('updateExpense', expense);
+                return response.data.status;
+            } catch (error) {
+                return error.response.data.join();
+            }
+
         },
-        updateExpense(context, expense) {
-            axios.patch('/expenses/' + expense.id, {
-                title: expense.title,
-                completed: expense.completed,
-            })
-                .then(response => {
-                    context.commit('updateExpense', response.data)
-                })
-                .catch(error => {
-                    console.log(error)
-                })
-        },
-        deleteExpense(context, id) {
-            return new Promise((resolve, reject) => {
-                axios.delete('/expenses/' + id)
-                    .then(response => {
-                        context.commit('deleteExpense', id);
-                        resolve(response)
-                    })
-                    .catch(error => {
-                        reject(error)
-                    })
-            });
+        async deleteExpense({ commit }, id) {
+            let response = await axios.delete('/expenses/' + id)
+            commit('deleteExpense', id);
+            return response.data.status;
         }
     }
 })

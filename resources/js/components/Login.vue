@@ -52,19 +52,15 @@ export default {
       var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(email.toLowerCase());
     },
-    submit() {
+    async submit() {
       this.$store.commit("setErrorMessage", "");
       this.validate();
       if (this.valid) {
-        this.$store
-          .dispatch("retrieveToken", {
-            email: this.email,
-            password: this.password
-          })
-          .then(response => {
-              console.log(response)
-            this.$router.push({ name: "expenses" });
-          });
+        await this.$store.dispatch("retrieveToken", {
+          email: this.email,
+          password: this.password
+        });
+        this.$router.push({ name: "expenses" });
       }
     }
   }

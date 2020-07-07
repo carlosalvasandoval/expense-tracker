@@ -17,6 +17,8 @@ class CreateExpensesTable extends Migration
             $table->id();
             $table->integer('user_id');
             $table->string('item');
+            $table->integer('month');
+            $table->integer('year');
             $table->double('cost', 8, 2);
             $table->timestamps();
             $table->softDeletes();
